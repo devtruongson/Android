@@ -11,8 +11,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -34,7 +37,14 @@ public class MainActivity extends AppCompatActivity {
     private Button btnThem;
     private Button btnXoa;
     private int positionDelete = -1;
-    private  Button btnSua;
+    private Button btnSua;
+    private RadioGroup rdoGroup;
+    private Button btnCheckValue;
+    private Button btnCheckValueCheckBox;
+    private CheckBox cb1;
+    private CheckBox cb2;
+    private CheckBox cb3;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +65,12 @@ public class MainActivity extends AppCompatActivity {
         this.btnThem = findViewById(R.id.them);
         this.btnXoa = findViewById(R.id.xoa);
         this.btnSua = findViewById(R.id.sua);
+        this.rdoGroup = findViewById(R.id.rdoGroup);
+        this.btnCheckValue = findViewById(R.id.btn_check_value);
+        this.btnCheckValueCheckBox = findViewById(R.id.btn_checkbox);
+        this.cb1 = findViewById(R.id.cb_1);
+        this.cb2 = findViewById(R.id.cb_2);
+        this.cb3 = findViewById(R.id.cb_3);
 
         // handle Render First ListView
         this.handleRenderListView(this.danhSachDanhBa);
@@ -63,15 +79,15 @@ public class MainActivity extends AppCompatActivity {
         this.btnThem.setOnClickListener(v -> {
             String name = editTextName.getText().toString().trim();
             String sdt = editTextSdt.getText().toString().trim();
-            
-            if(name.isEmpty() || sdt.isEmpty()) {
+
+            if (name.isEmpty() || sdt.isEmpty()) {
                 Toast.makeText(MainActivity.this, "Vui lòng nhập đầy đủ các trường", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             DanhBa db = new DanhBa(name, sdt);
             this.danhSachDanhBa.add(db);
-            Toast.makeText(MainActivity.this,"Bạn đã thêm thành công SDT", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Bạn đã thêm thành công SDT", Toast.LENGTH_SHORT).show();
             this.handleRenderListView(this.danhSachDanhBa);
         });
 
@@ -83,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + sdt));
 
                 // check permissions and request
-                if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, 1);
                     return true;
                 }
@@ -101,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         btnXoa.setOnClickListener(v -> {
-            if(positionDelete == -1){
+            if (positionDelete == -1) {
                 Toast.makeText(MainActivity.this, "Vui lòng chọn danh bạ cần xóa", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -131,6 +147,22 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, DanhSachDanhBa.class);
             startActivity(intent);
             finish();
+        });
+
+        // rdoGroup Handler
+        rdoGroup.setOnCheckedChangeListener((group, checkedId) ->
+        {
+            Toast.makeText(MainActivity.this,group.findViewById(checkedId).toString(), Toast.LENGTH_SHORT).show();
+        });
+        btnCheckValue.setOnClickListener(v -> {
+            int checkedId = rdoGroup.getCheckedRadioButtonId();
+            RadioButton rdoBtn = rdoGroup.findViewById(checkedId);
+            String value = rdoBtn.getText().toString();
+            Toast.makeText(MainActivity.this, value, Toast.LENGTH_SHORT).show();
+        });
+
+        // handle CheckBox
+        btnCheckValueCheckBox.setOnClickListener(v -> {
         });
     }
 
