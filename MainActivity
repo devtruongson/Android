@@ -1,0 +1,141 @@
+package com.example.dethibuoisang;
+
+import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+public class MainActivity extends AppCompatActivity {
+    private ArrayList<DanhBa> danhSachDanhBa = new ArrayList<DanhBa>(Arrays.asList(new DanhBa("Trường Sơn", "0869224813")));
+    private ListView lvRender;
+    private EditText editTextName;
+    private EditText editTextSdt;
+    private Button btnThem;
+    private Button btnXoa;
+    private int positionDelete = -1;
+    private  Button btnSua;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_main);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+
+        // setUp cac the
+        this.lvRender = findViewById(R.id.list_view);
+        this.editTextName = findViewById(R.id.name_user);
+        this.editTextSdt = findViewById(R.id.sdt);
+        this.btnThem = findViewById(R.id.them);
+        this.btnXoa = findViewById(R.id.xoa);
+        this.btnSua = findViewById(R.id.sua);
+
+        // handle Render First ListView
+        this.handleRenderListView(this.danhSachDanhBa);
+
+        // handle Click Btn Them
+        this.btnThem.setOnClickListener(v -> {
+            String name = editTextName.getText().toString().trim();
+            String sdt = editTextSdt.getText().toString().trim();
+            
+            if(name.isEmpty() || sdt.isEmpty()) {
+                Toast.makeText(MainActivity.this, "Vui lòng nhập đầy đủ các trường", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            DanhBa db = new DanhBa(name, sdt);
+            this.danhSachDanhBa.add(db);
+            Toast.makeText(MainActivity.this,"Bạn đã thêm thành công SDT", Toast.LENGTH_SHORT).show();
+            this.handleRenderListView(this.danhSachDanhBa);
+        });
+
+        // handle Click ListView Item LongClick
+        this.lvRender.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                String sdt = danhSachDanhBa.get(position).getSdt();
+                Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + sdt));
+
+                // check permissions and request
+                if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, 1);
+                    return true;
+                }
+
+                startActivity(intent);
+                return true;
+            }
+        });
+
+        // handle Click Item ListView and remove
+        this.lvRender.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                positionDelete = position;
+            }
+        });
+        btnXoa.setOnClickListener(v -> {
+            if(positionDelete == -1){
+                Toast.makeText(MainActivity.this, "Vui lòng chọn danh bạ cần xóa", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Bạn chắc chắn muốn xóa không?");
+            builder.setNegativeButton("Hủy", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            builder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    danhSachDanhBa.remove(positionDelete);
+                    positionDelete = -1;
+                    Toast.makeText(MainActivity.this, "Bạn đã xóa thành công danh bạ", Toast.LENGTH_SHORT).show();
+                    handleRenderListView(danhSachDanhBa);
+                }
+            });
+            builder.create();
+            builder.show();
+        });
+
+        // handle Open New Activity
+        btnSua.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, DanhSachDanhBa.class);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    private void handleRenderListView(ArrayList<DanhBa> danhSach) {
+        ArrayAdapter adapter = new ArrayAdapter(MainActivity.this, android.R.layout.simple_list_item_1, danhSach);
+        this.lvRender.setAdapter(adapter);
+    }
+}
